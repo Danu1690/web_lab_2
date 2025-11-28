@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/auth.js';
-import Input from '../ui/Input.jsx';
-import Button from '../ui/Button.jsx';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -21,7 +19,6 @@ const Login = () => {
       ...prev,
       [name]: value
     }));
-    // Очищаем ошибку при изменении поля
     if (error) setError('');
   };
 
@@ -50,73 +47,54 @@ const Login = () => {
     }
   };
 
-  const testConnection = async () => {
-    try {
-      const response = await authAPI.getCaptcha();
-      alert('✅ Сервер работает! Капча получена успешно.');
-    } catch (error) {
-      alert('❌ Ошибка подключения к серверу. Проверьте запущен ли бэкенд.');
-    }
-  };
-
   return (
     <div className="auth-page">
       <div className="auth-container">
         <div className="auth-card">
           <h1 className="auth-title">Вход в систему</h1>
           
-          <div className="auth-actions">
-            <Button
-              variant="secondary"
-              size="small"
-              onClick={testConnection}
-              className="test-connection-btn"
-            >
-              🔍 Проверить сервер
-            </Button>
-          </div>
-
           {error && (
             <div className="error-message">
               <strong>Ошибка:</strong> {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
-            <Input
-              label="Логин или Email"
-              type="text"
-              name="login"
-              value={formData.login}
-              onChange={handleChange}
-              placeholder="Введите ваш логин или email"
-              required
-              disabled={loading}
-              autoComplete="username"
-            />
+          <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label className="input-label">Логин или Email</label>
+              <input
+                type="text"
+                name="login"
+                value={formData.login}
+                onChange={handleChange}
+                placeholder="Введите ваш логин или email"
+                required
+                disabled={loading}
+                className="input"
+              />
+            </div>
 
-            <Input
-              label="Пароль"
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Введите ваш пароль"
-              required
-              disabled={loading}
-              autoComplete="current-password"
-            />
+            <div className="form-group">
+              <label className="input-label">Пароль</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Введите ваш пароль"
+                required
+                disabled={loading}
+                className="input"
+              />
+            </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="large"
-              loading={loading}
               disabled={loading}
-              className="auth-submit-btn"
+              className="auth-button"
             >
               {loading ? 'Вход...' : 'Войти'}
-            </Button>
+            </button>
           </form>
 
           <div className="auth-footer">
@@ -126,12 +104,6 @@ const Login = () => {
                 Зарегистрируйтесь
               </Link>
             </p>
-          </div>
-
-          <div className="auth-test-credentials">
-            <h3>Тестовые данные:</h3>
-            <p><strong>Логин:</strong> testuser</p>
-            <p><strong>Пароль:</strong> Test123!</p>
           </div>
         </div>
       </div>

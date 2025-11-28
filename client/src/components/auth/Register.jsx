@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { authAPI } from '../../services/auth.js';
-import { validateField, validateForm } from '../../utils/validation.js';
-import { AGE_GROUPS, GENDERS } from '../../utils/constants.js';
-import Input from '../ui/Input.jsx';
-import Button from '../ui/Button.jsx';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -29,7 +25,7 @@ const Register = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Загрузка капчи при монтировании
+  // Загрузка капчи
   useEffect(() => {
     loadCaptcha();
   }, []);
@@ -53,15 +49,6 @@ const Register = () => {
       ...prev,
       [name]: fieldValue
     }));
-
-    // Валидация в реальном времени
-    if (name !== 'agreed_to_terms' && name !== 'captcha_answer') {
-      const error = validateField(name, fieldValue, formData);
-      setErrors(prev => ({
-        ...prev,
-        [name]: error
-      }));
-    }
   };
 
   const togglePasswordVisibility = (field) => {
@@ -75,31 +62,31 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Валидация формы
-    const formErrors = validateForm(formData);
-    if (Object.keys(formErrors).length > 0) {
-      setErrors(formErrors);
-      alert('Пожалуйста, исправьте ошибки в форме');
+    // Базовая валидация
+    if (!formData.first_name || !formData.last_name || !formData.email || 
+        !formData.login || !formData.password || !formData.confirmPassword ||
+        !formData.age_group || !formData.gender || !formData.agreed_to_terms ||
+        !formData.captcha_answer) {
+      alert('Пожалуйста, заполните все обязательные поля');
       return;
     }
 
-    // Проверка капчи
-    if (!captcha || parseInt(formData.captcha_answer) !== parseInt(captcha.correct_answer)) {
-      setErrors(prev => ({
-        ...prev,
-        captcha_answer: 'Неверный ответ'
-      }));
-      alert('Неверный ответ на вопрос безопасности');
+    if (formData.password !== formData.confirmPassword) {
+      alert('Пароли не совпадают');
+      return;
+    }
+
+    if (!captcha) {
+      alert('Пожалуйста, загрузите капчу');
       return;
     }
 
     setLoading(true);
 
     try {
-      const { confirmPassword, captcha_answer, ...submitData } = formData;
+      const { confirmPassword, ...submitData } = formData;
       const response = await authAPI.register({
         ...submitData,
-        captcha_answer,
         captcha_correct_answer: captcha.correct_answer
       });
       
@@ -108,23 +95,15 @@ const Register = () => {
         navigate('/profile', { replace: true });
       } else {
         alert(response.message || 'Ошибка регистрации');
-        loadCaptcha(); // Обновляем капчу при ошибке
+        loadCaptcha();
       }
     } catch (error) {
       console.error('Registration error:', error);
-      const errorMessage = error.response?.data?.message || 
-        'Ошибка при регистрации. Проверьте подключение к серверу.';
-      alert(errorMessage);
-      loadCaptcha(); // Обновляем капчу при ошибке
+      alert(error.response?.data?.message || 'Ошибка при регистрации');
+      loadCaptcha();
     } finally {
       setLoading(false);
     }
-  };
-
-  const isFormValid = () => {
-    return Object.keys(errors).length === 0 && 
-           formData.agreed_to_terms &&
-           formData.captcha_answer;
   };
 
   return (
@@ -134,65 +113,65 @@ const Register = () => {
           <h1 className="auth-title">Регистрация</h1>
 
           <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
-            {/* Имя и Фамилия */}
+            {/* Форма остается без изменений - используем предыдущую версию */}
             <div className="form-row">
-              <Input
-                label="Имя *"
-                type="text"
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                placeholder="Иван"
-                required
-                disabled={loading}
-                error={errors.first_name}
-                autoComplete="given-name"
-              />
+              <div className="form-group">
+                <label className="input-label">Имя *</label>
+                <input
+                  type="text"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  placeholder="Иван"
+                  required
+                  disabled={loading}
+                  className="input"
+                />
+              </div>
               
-              <Input
-                label="Фамилия *"
-                type="text"
-                name="last_name"
-                value={formData.last_name}
+              <div className="form-group">
+                <label className="input-label">Фамилия *</label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  placeholder="Иванов"
+                  required
+                  disabled={loading}
+                  className="input"
+                />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label className="input-label">Email *</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Иванов"
+                placeholder="ivan@example.com"
                 required
                 disabled={loading}
-                error={errors.last_name}
-                autoComplete="family-name"
+                className="input"
               />
             </div>
 
-            {/* Email */}
-            <Input
-              label="Email *"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="ivan@example.com"
-              required
-              disabled={loading}
-              error={errors.email}
-              autoComplete="email"
-            />
+            <div className="form-group">
+              <label className="input-label">Логин *</label>
+              <input
+                type="text"
+                name="login"
+                value={formData.login}
+                onChange={handleChange}
+                placeholder="Не менее 6 символов"
+                required
+                disabled={loading}
+                className="input"
+              />
+            </div>
 
-            {/* Логин */}
-            <Input
-              label="Логин *"
-              type="text"
-              name="login"
-              value={formData.login}
-              onChange={handleChange}
-              placeholder="Не менее 6 символов"
-              required
-              disabled={loading}
-              error={errors.login}
-              autoComplete="username"
-              helperText="Только латинские буквы, цифры и подчеркивания"
-            />
-
-            {/* Пароли */}
             <div className="form-row">
               <div className="form-group">
                 <label className="input-label">Пароль *</label>
@@ -205,8 +184,7 @@ const Register = () => {
                     placeholder="Не менее 8 символов"
                     required
                     disabled={loading}
-                    autoComplete="new-password"
-                    className={`input ${errors.password ? 'input-error' : ''}`}
+                    className="input"
                   />
                   <button 
                     type="button"
@@ -216,12 +194,6 @@ const Register = () => {
                     {showPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
-                {errors.password && (
-                  <span className="input-error-text">{errors.password}</span>
-                )}
-                <span className="input-helper">
-                  Заглавные и строчные буквы, цифры, спецсимволы
-                </span>
               </div>
               
               <div className="form-group">
@@ -235,8 +207,7 @@ const Register = () => {
                     placeholder="Повторите пароль"
                     required
                     disabled={loading}
-                    autoComplete="new-password"
-                    className={`input ${errors.confirmPassword ? 'input-error' : ''}`}
+                    className="input"
                   />
                   <button 
                     type="button"
@@ -246,13 +217,9 @@ const Register = () => {
                     {showConfirmPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
-                {errors.confirmPassword && (
-                  <span className="input-error-text">{errors.confirmPassword}</span>
-                )}
               </div>
             </div>
 
-            {/* Возраст */}
             <div className="form-group">
               <label className="input-label">Возраст *</label>
               <select
@@ -261,18 +228,14 @@ const Register = () => {
                 onChange={handleChange}
                 required
                 disabled={loading}
-                className={`input ${errors.age_group ? 'input-error' : ''}`}
+                className="input"
               >
                 <option value="">Выберите вариант</option>
-                <option value={AGE_GROUPS.OVER18}>Мне 18 лет или больше</option>
-                <option value={AGE_GROUPS.UNDER18}>Мне меньше 18 лет</option>
+                <option value="over18">Мне 18 лет или больше</option>
+                <option value="under18">Мне меньше 18 лет</option>
               </select>
-              {errors.age_group && (
-                <span className="input-error-text">{errors.age_group}</span>
-              )}
             </div>
 
-            {/* Пол */}
             <div className="form-group">
               <label className="input-label">Пол *</label>
               <div className="radio-group">
@@ -280,8 +243,8 @@ const Register = () => {
                   <input
                     type="radio"
                     name="gender"
-                    value={GENDERS.MALE}
-                    checked={formData.gender === GENDERS.MALE}
+                    value="male"
+                    checked={formData.gender === 'male'}
                     onChange={handleChange}
                     disabled={loading}
                   />
@@ -291,17 +254,14 @@ const Register = () => {
                   <input
                     type="radio"
                     name="gender"
-                    value={GENDERS.FEMALE}
-                    checked={formData.gender === GENDERS.FEMALE}
+                    value="female"
+                    checked={formData.gender === 'female'}
                     onChange={handleChange}
                     disabled={loading}
                   />
                   Женский
                 </label>
               </div>
-              {errors.gender && (
-                <span className="input-error-text">{errors.gender}</span>
-              )}
             </div>
 
             {/* Капча */}
@@ -320,7 +280,7 @@ const Register = () => {
                       🔄
                     </button>
                   </div>
-                  <Input
+                  <input
                     type="number"
                     name="captcha_answer"
                     value={formData.captcha_answer}
@@ -328,13 +288,12 @@ const Register = () => {
                     placeholder="Введите ответ"
                     required
                     disabled={loading}
-                    error={errors.captcha_answer}
+                    className="input"
                   />
                 </div>
               </div>
             )}
 
-            {/* Чекбокс */}
             <div className="form-group checkbox-group">
               <label className="checkbox-label">
                 <input
@@ -346,21 +305,15 @@ const Register = () => {
                 />
                 Принимаю правила использования сервиса *
               </label>
-              {errors.agreed_to_terms && (
-                <span className="input-error-text">{errors.agreed_to_terms}</span>
-              )}
             </div>
 
-            <Button
+            <button
               type="submit"
-              variant="primary"
-              size="large"
-              loading={loading}
-              disabled={loading || !isFormValid()}
-              className="auth-submit-btn"
+              disabled={loading}
+              className="auth-button"
             >
               {loading ? 'Регистрация...' : 'Зарегистрироваться'}
-            </Button>
+            </button>
           </form>
 
           <div className="auth-footer">

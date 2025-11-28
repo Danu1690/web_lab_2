@@ -16,8 +16,8 @@ export const authAPI = {
     return response.data;
   },
 
-  async verifyToken() {
-    const response = await api.get('/auth/verify');
+  async getProfile() {
+    const response = await api.get('/users/profile');
     return response.data;
   }
 };
