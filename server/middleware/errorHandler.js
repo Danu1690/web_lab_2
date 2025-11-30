@@ -10,21 +10,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // JWT ошибки
-  if (err.name === 'JsonWebTokenError') {
-    return res.status(401).json({
-      success: false,
-      message: 'Неверный токен'
-    });
-  }
-
-  if (err.name === 'TokenExpiredError') {
-    return res.status(401).json({
-      success: false,
-      message: 'Токен истек'
-    });
-  }
-
   // Остальные ошибки
   res.status(500).json({
     success: false,

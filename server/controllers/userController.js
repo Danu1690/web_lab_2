@@ -1,24 +1,25 @@
-import { User } from '../models/User.js';
+import { pool } from '../config/database.js';
 
 export const userController = {
   // Получение профиля
   async getProfile(req, res) {
     try {
-      const user = await User.findById(req.user.id);
+      const result = await pool.query(
+        `SELECT id, first_name, last_name, email, login, age_group, gender, theme, created_at 
+         FROM users WHERE id = $1`,
+        [req.session.userId]
+      );
       
+      if (result.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Пользователь не найден'
+        });
+      }
+
       res.json({
         success: true,
-        user: {
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          email: user.email,
-          login: user.login,
-          age_group: user.age_group,
-          gender: user.gender,
-          theme: user.theme,
-          created_at: user.created_at
-        }
+        user: result.rows[0]
       });
     } catch (error) {
       console.error('Get profile error:', error);
@@ -41,12 +42,15 @@ export const userController = {
         });
       }
 
-      const updatedUser = await User.updateTheme(req.user.id, theme);
+      const result = await pool.query(
+        'UPDATE users SET theme = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING theme',
+        [theme, req.session.userId]
+      );
       
       res.json({
         success: true,
         message: 'Тема обновлена',
-        theme: updatedUser.theme
+        theme: result.rows[0].theme
       });
     } catch (error) {
       console.error('Update theme error:', error);
@@ -55,5 +59,30 @@ export const userController = {
         message: 'Ошибка обновления темы'
       });
     }
+  },
+
+
+  async getAllUsers(req, res) {
+    try {
+      const result = await pool.query(
+        `SELECT id, first_name, last_name, email, login, age_group, gender, theme, created_at 
+        FROM users 
+        ORDER BY created_at DESC`
+      );
+
+      res.json({
+        success: true,
+        users: result.rows,
+        total: result.rows.length
+      });
+    } catch (error) {
+      console.error('Get all users error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Ошибка получения списка пользователей'
+      });
+    }
   }
+
 };
+

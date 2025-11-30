@@ -1,23 +1,45 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext.jsx';
+import { authAPI } from '../services/auth.js';
 
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const { user, isAuthenticated } = useAuth();
 
+  // Загрузка темы при инициализации
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-      setIsDarkTheme(true);
-      document.documentElement.setAttribute('data-theme', 'dark');
+    
+    if (isAuthenticated && user?.theme) {
+      // Приоритет у темы из БД
+      setIsDarkTheme(user.theme === 'dark');
+      document.documentElement.setAttribute('data-theme', user.theme);
+    } else if (savedTheme) {
+      // Иначе берем из localStorage
+      setIsDarkTheme(savedTheme === 'dark');
+      document.documentElement.setAttribute('data-theme', savedTheme);
     }
-  }, []);
+  }, [user, isAuthenticated]);
 
-  const toggleTheme = () => {
-    const newTheme = !isDarkTheme;
-    setIsDarkTheme(newTheme);
-    document.documentElement.setAttribute('data-theme', newTheme ? 'dark' : 'light');
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  const toggleTheme = async () => {
+    const newTheme = !isDarkTheme ? 'dark' : 'light';
+    const newIsDarkTheme = !isDarkTheme;
+    
+    setIsDarkTheme(newIsDarkTheme);
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    // Сохраняем в БД если пользователь авторизован
+    if (isAuthenticated) {
+      try {
+        await authAPI.updateTheme(newTheme);
+        console.log('✅ Theme saved to database');
+      } catch (error) {
+        console.error('❌ Failed to save theme to database:', error);
+      }
+    }
   };
 
   const value = {
@@ -39,4 +61,3 @@ export const useTheme = () => {
   }
   return context;
 };
-

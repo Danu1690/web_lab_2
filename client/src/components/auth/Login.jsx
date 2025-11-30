@@ -24,6 +24,12 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!formData.login || !formData.password) {
+      setError('Заполните все поля');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -31,7 +37,7 @@ const Login = () => {
       const response = await authAPI.login(formData);
       
       if (response.success) {
-        login(response.token, response.user);
+        login(response.user);
         navigate('/profile', { replace: true });
       } else {
         setError(response.message || 'Ошибка входа');

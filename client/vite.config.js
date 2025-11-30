@@ -5,7 +5,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true, // Разрешаем внешний доступ
-    cors: true, // Включаем CORS для dev сервера
+    host: true
+  },
+  build: {
+    outDir: 'dist'
   }
 })

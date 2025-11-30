@@ -3,9 +3,10 @@ import Navbar from './Navbar.jsx';
 import { useAuth } from "../../context/AuthContext.jsx";
 
 const Layout = ({ children }) => {
-  const { loading } = useAuth();
+  const { loading, authChecked } = useAuth();
 
-  if (loading) {
+  // Показываем загрузку только до первой проверки
+  if (loading && !authChecked) {
     return (
       <div className="min-h-screen bg-primary">
         <div className="loading">Загрузка приложения...</div>

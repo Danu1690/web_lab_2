@@ -27,6 +27,8 @@ function App() {
                 } 
               />
               <Route path="/" element={<Navigate to="/profile" replace />} />
+              {/* Добавляем fallback route */}
+              <Route path="*" element={<Navigate to="/profile" replace />} />
             </Routes>
           </Layout>
         </Router>

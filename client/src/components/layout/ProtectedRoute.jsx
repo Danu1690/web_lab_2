@@ -3,13 +3,15 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, authChecked } = useAuth();
 
-  if (loading) {
+  // Показываем загрузку только до первой проверки аутентификации
+  if (loading && !authChecked) {
     return <div className="loading">Проверка авторизации...</div>;
   }
 
-  if (!isAuthenticated) {
+  // Если проверка завершена и пользователь не аутентифицирован - редирект
+  if (!isAuthenticated && authChecked) {
     return <Navigate to="/login" replace />;
   }
 

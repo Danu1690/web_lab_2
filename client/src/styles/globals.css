@@ -269,3 +269,139 @@ body {
   color: #856404;
   border: 1px solid rgba(255, 193, 7, 0.2);
 }
+
+.input-container {
+  position: relative;
+}
+
+.status-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+.checking-text {
+  font-size: 12px;
+  color: #ffa500;
+  margin-top: 4px;
+}
+
+.password-requirements {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.auth-button-disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+}
+
+.input-container .input {
+  padding-right: 35px;
+}
+
+[data-theme="dark"] .checking-text {
+  color: #ffb347; /* Оранжевый для темной темы */
+}
+
+[data-theme="dark"] .password-requirements {
+  color: #aaa; 
+  /* Серый для темной темы */
+}
+
+/* Стили для секции пользователей */
+.users-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.toggle-users-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.toggle-users-btn:hover {
+  background: #0056b3;
+}
+
+.users-stats {
+  margin-bottom: 15px;
+  font-size: 16px;
+  color: #666;
+}
+
+.users-table {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.users-table-header {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1.5fr 1.5fr 1.2fr;
+  background: #f8f9fa;
+  padding: 12px 15px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.users-table-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.5fr 1.5fr 1.2fr;
+  padding: 12px 15px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+.users-table-row:last-child {
+  border-bottom: none;
+}
+
+.users-table-row:hover {
+  background: #f8f9fa;
+}
+
+.users-table-row.current-user {
+  background: #e3f2fd;
+  font-weight: bold;
+}
+
+.no-users {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Темная тема */
+[data-theme="dark"] .users-table {
+  border-color: #444;
+}
+
+[data-theme="dark"] .users-table-header {
+  background: #2d3748;
+  border-color: #444;
+}
+
+[data-theme="dark"] .users-table-row {
+  border-color: #444;
+}
+
+[data-theme="dark"] .users-table-row:hover {
+  background: #2d3748;
+}
+
+[data-theme="dark"] .users-table-row.current-user {
+  background: #2c5282;
+}

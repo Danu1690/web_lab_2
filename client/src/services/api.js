@@ -1,7 +1,11 @@
 import axios from 'axios';
 
-// Прямой URL к бэкенду
-const API_BASE_URL = 'http://localhost:5000/api';
+//const API_BASE_URL = 'http://localhost:5000/api';
+const isDevelopment = import.meta.env.MODE === 'development';
+const API_BASE_URL = isDevelopment 
+  ? 'http://localhost:5000/api' 
+  : '/api';  // Относительный путь через Apache
+
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,23 +13,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Важно для сессий!
 });
 
-// Добавляем логирование запросов
-api.interceptors.request.use(
-  (config) => {
-    console.log(`🔄 API Request: ${config.method?.toUpperCase()} ${config.url}`);
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    console.error('❌ API Request Error:', error);
-    return Promise.reject(error);
-  }
-);
 
 // Логирование ответов
 api.interceptors.response.use(
@@ -43,11 +33,6 @@ api.interceptors.response.use(
       console.error('🌐 No response received:', error.request);
     }
     
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
-    }
     return Promise.reject(error);
   }
 );

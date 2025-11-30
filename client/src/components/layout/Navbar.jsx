@@ -2,16 +2,35 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import { authAPI } from '../../services/auth.js';
+
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, loading } = useAuth();
   const { isDarkTheme, toggleTheme } = useTheme();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    const currentTheme = isDarkTheme ? 'dark' : 'light';
+    
+    try {
+      // Обновляем тему в БД
+      if (isAuthenticated) {
+        await authAPI.updateTheme(currentTheme);
+      }
+      
+      // Выполняем выход
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
+
+  // Не показываем навбар пока идет первоначальная загрузка
+  if (loading) {
+    return null;
+  }
 
   return (
     <nav className="navbar">

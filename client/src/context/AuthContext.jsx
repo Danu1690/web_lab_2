@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { authAPI } from '../services/auth.js';
 
 const AuthContext = createContext();
 
@@ -6,47 +7,65 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
+  // Инициализация аутентификации
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
-    
-    if (token && userData) {
+    const initializeAuth = async () => {
       try {
-        setUser(JSON.parse(userData));
-        setIsAuthenticated(true);
+        const response = await authAPI.verifyToken();
+        if (response.success) {
+          setUser(response.user);
+          setIsAuthenticated(true);
+        }
       } catch (error) {
-        console.error('Error parsing user data:', error);
-        logout();
+        console.log('User not authenticated or session expired');
+        // Не аутентифицирован - это нормально
+        setUser(null);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+        setAuthChecked(true);
       }
-    }
-    setLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
-  const login = (token, userData) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
-  };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
-    setIsAuthenticated(false);
+    if (userData.theme) {
+    document.documentElement.setAttribute('data-theme', userData.theme);
+    localStorage.setItem('theme', userData.theme);
+  }
+};
+
+  const logout = async () => {
+    try {
+      if (user) {
+      await authAPI.updateTheme(user.theme || 'light');
+    }
+      await authAPI.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const updateUser = (userData) => {
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
-    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   const value = {
     user,
     isAuthenticated,
-    loading,
+    loading: loading && !authChecked,
+    authChecked,
     login,
     logout,
     updateUser
@@ -66,4 +85,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

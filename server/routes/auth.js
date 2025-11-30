@@ -5,7 +5,7 @@ import {
   loginValidation, 
   handleValidationErrors 
 } from '../middleware/validation.js';
-import { authenticateToken } from '../middleware/auth.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -25,10 +25,19 @@ router.post(
   authController.login
 );
 
+// Логаут
+router.post('/logout', authController.logout);
+
 // Получение капчи
 router.get('/captcha', authController.getCaptcha);
 
-// Проверка токена
-router.get('/verify', authenticateToken, authController.verify);
+// Проверка аутентификации
+router.get('/verify', requireAuth, authController.verify);
+
+// Проверка доступности email
+router.get('/check-email', authController.checkEmail);
+
+// Проверка доступности логина
+router.get('/check-login', authController.checkLogin);
 
 export default router;
