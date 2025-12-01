@@ -158,8 +158,6 @@ export const authController = {
     }
   },
 
-  // Обновление токенов - УДАЛЯЕМ
-  // async refresh(req, res) { ... }
 
   // Логаут
   async logout(req, res) {
